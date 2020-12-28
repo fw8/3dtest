@@ -20,10 +20,10 @@ class ModelData {
     private var triangleIndices: [Int32] = []   // 1d list of indices pointing to triangle vertices
     
     // Bounding box
-    private var maxX: Float32 = -1000
-    private var minX: Float32 = 1000
-    private var maxY: Float32 = -1000
-    private var minY: Float32 = 1000
+    private var maxX: Float32 = -Float32.greatestFiniteMagnitude
+    private var minX: Float32 = Float32.greatestFiniteMagnitude
+    private var maxY: Float32 = -Float32.greatestFiniteMagnitude
+    private var minY: Float32 = Float.greatestFiniteMagnitude
     
     // Camera intrinsics
     private var fx: Float32 = 0
