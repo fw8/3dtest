@@ -63,7 +63,7 @@ class ViewController: UIViewController {
         x = ModelData()
         
         let mesh = x.generateMesh()
-        mesh.firstMaterial!.diffuse.contents = UIColor.orange
+        mesh.firstMaterial!.diffuse.contents = UIColor(red: 254/255, green: 177/255, blue: 154/255, alpha: 1)
         mesh.firstMaterial!.specular.contents = UIColor.white
         let meshNode = SCNNode(geometry: mesh)
         scene.rootNode.addChildNode(meshNode)
