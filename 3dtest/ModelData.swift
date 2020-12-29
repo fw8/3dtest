@@ -19,12 +19,6 @@ class ModelData {
                                                 // value could be nil if vertice was skiped or removed
     private var triangleIndices: [Int32] = []   // 1d list of indices pointing to triangle vertices
     
-    // Bounding box
-    private var maxX: Float32 = -Float32.greatestFiniteMagnitude
-    private var minX: Float32 = Float32.greatestFiniteMagnitude
-    private var maxY: Float32 = -Float32.greatestFiniteMagnitude
-    private var minY: Float32 = Float.greatestFiniteMagnitude
-    
     // Camera intrinsics
     private var fx: Float32 = 0
     private var fy: Float32 = 0
@@ -32,8 +26,8 @@ class ModelData {
     private var cy: Float32 = 0
     
     // Camer euler angles
-    private var euler: SCNVector3 = SCNVector3(0,0,0)
-    
+    private var euler = simd_float3(0,0,0)
+        
     // Simple constructor, loading demo data from json file
     init() {
         let asset = NSDataAsset(name: "ExampleScan", bundle: Bundle.main)
@@ -41,6 +35,22 @@ class ModelData {
         
         depthMap = json["depthMap"] as? [[Float32]] ?? [[]]
         let cameraIntrinsics = json["cameraIntrinsics"] as? [[Float32]] ?? [[]]
+        
+        
+        // cam & lidar haben (scheinbar) immer querformat (landscape)
+        // bei aufnahme im hochformat (portrait) geht die x achse dann also nach oben (oder nach unten)
+        // das bild erscheint dann um 90 grad gedreht
+        //
+        // Quer (ausgangsformat):
+        // Euler: x = -2º, y = 0º, z = -1º  also Handy quer, kamera links oben = (0,0,0)
+        // Lidar: w = 256.0, h = 192.0, cx = 127.50073, cy = 91.79468
+        //
+        // Hochkant:
+        // Euler: x = -4º, y = 0º, z = -90º  Handy hochkannt => kamera rechts oben = querformat um -90º um die z-achse gedreht
+        // Lidar: w = 256.0, h = 192.0, cx = 123.33783, cy = 95.96991
+        //
+        // Euler positiv => drehung nach links, Euler negativ = drehung nach rechts
+        
         
         let camWidth = (json["camImageResolution"] as! NSDictionary)["width"] as! Float32
         let camHeight = (json["camImageResolution"] as! NSDictionary)["height"] as! Float32
@@ -51,22 +61,29 @@ class ModelData {
         let xScale = 1.0/camWidth * lidarWidth
         let yScale = 1.0/camHeight * lidarHeight
         
-        let jsonEuler = (json["cameraEulerAngle"] as! NSDictionary)
-        print(jsonEuler)
-        
         euler.x = Float32((json["cameraEulerAngle"] as! NSDictionary)["x"] as! Double)
         euler.y = Float32((json["cameraEulerAngle"] as! NSDictionary)["y"] as! Double)
         euler.z = Float32((json["cameraEulerAngle"] as! NSDictionary)["z"] as! Double)
+        
+        print("Euler: x = \(Int(euler.x.inDegree().rounded()))º, y = \(Int(euler.y.inDegree().rounded()))º, z = \(Int(euler.z.inDegree().rounded()))º")
         
         fx = cameraIntrinsics[0][0] * xScale
         fy = cameraIntrinsics[1][1] * yScale
         cx = cameraIntrinsics[0][2] * xScale
         cy = cameraIntrinsics[1][2] * yScale
+        
+        print("Lidar: w = \(lidarWidth), h = \(lidarHeight), cx = \(cx), cy = \(cy)")
+        
     }
     
     // Constructor which creates a point cloud from ARFrame
-    init(from frame: ARFrame, clipAt maxDepth: Double) {
-        guard let cvDepthMap = frame.smoothedSceneDepth?.depthMap else {
+    init(_ frame: ARFrame?) {
+        if (frame == nil) {
+            print("Error, no frame")
+            return
+        }
+        
+        guard let cvDepthMap = frame!.smoothedSceneDepth?.depthMap else {
             print("Error, no depth map")
             return
         }
@@ -78,8 +95,8 @@ class ModelData {
         
         depthMap = cvDepthMap.exportAsArray()
         
-        let camWidth = Float(frame.camera.imageResolution.width)
-        let camHeight = Float(frame.camera.imageResolution.height)
+        let camWidth = Float(frame!.camera.imageResolution.width)
+        let camHeight = Float(frame!.camera.imageResolution.height)
         
         let lidarWidth = Float(CVPixelBufferGetWidth(cvDepthMap))
         let lidarHeight = Float(CVPixelBufferGetHeight(cvDepthMap))
@@ -88,23 +105,25 @@ class ModelData {
         let xScale = 1.0/camWidth * lidarWidth
         let yScale = 1.0/camHeight * lidarHeight
         
-        fx = frame.camera.intrinsics[0][0] * xScale
-        fy = frame.camera.intrinsics[1][1] * yScale
-        cx = frame.camera.intrinsics[0][2] * xScale
-        cy = frame.camera.intrinsics[1][2] * yScale
+        fx = frame!.camera.intrinsics[0][0] * xScale
+        fy = frame!.camera.intrinsics[1][1] * yScale
+        cx = frame!.camera.intrinsics[0][2] * xScale
+        cy = frame!.camera.intrinsics[1][2] * yScale
+
     }
     
     // generate the mesh from given depth data and the camera intrinsic
-    func generateMesh(maxDepth: Float32) -> SCNGeometry {
+    func generateMesh(maxDepth: Float32 = 1.0) -> SCNGeometry {
         
         // reset array
         triangleIndices = []
         
-        // need to flip depthMap?
-        let h = depthMap.count
-        let w = depthMap[0].count
+        let w = depthMap.count
+        let h = depthMap[0].count
+        print("w = \(w), h = \(h)")
         
-        //print("w = \(w), h = \(h)")
+        // minimal z value of all vertices
+        var minZ: Float32 = Float.greatestFiniteMagnitude
         
         // init 2d matrix of indices. Every index points to an 3d vertice. the x and y coordinates of the 3d vertices are aligned to the 2d matrix.
         idxMatrix = Array(repeating: Array(repeating: nil, count: h), count: w)
@@ -116,39 +135,38 @@ class ModelData {
         var idx:Int32 = 0
         for ix in 0..<w {
             for iy in 0..<h {
-                let z = depthMap[h-iy-1][ix] // swap x and y axis and the invert y axis (origin of the depth sensor (0,0) is upper left and y axis points downwards. In 3d space the y axis points upwards
+                let z = depthMap[ix][iy] //
                 
-                if (z < maxDepth) {  // depth clipping
+                if (z < maxDepth) {  // depth clipping assuming smalest z is 0
                     
                     let x = z * (Float32(ix) - cx) / fx
                     let y = z * (Float32(iy) - cy) / fy
-                    let point: SCNVector3 = SCNVector3(x, y, z)
                     
-                    vertices.append(point) // add calculated point
+                    let point3d: SCNVector3 = SCNVector3(-1*x, -1*y, z).rotatedAround(y: -euler.x, z: euler.z)
+                    // x und y achse spiegeln und euler.z um z achse drehen (weil wir bilder immer hochkannt machen ist euler.z immer ca. -90º)
+                    // noch unklar warum die rotation von euler.x um die y achse... da stimmt irgendwas noch nicht
+                    // coordinaten raum in sceneview ist: z zeigt zur kamera und die schaut nach -z, x nach rechts und y nach oben
+                    // depth sensor schaut aber nach +z!
+                    // aktuell wird die kamera einfach nach z=-1m verschoben und dann um 180º um die y achse gedreht
+                    // danach zeigt die x achse allerdings nach links...
+                    
+                    vertices.append(point3d) // add calculated point
                     normals.append(SCNVector3(x:0,y:0,z:0)) // create an empty normal element
                     idxMatrix[ix][iy] = idx  // store corresponding index
                     idx+=1  // prepare for next index
                     
-                    // construct bounding box. Used later to center the point cloud
-                    maxX = (x > maxX) ? x : maxX
-                    minX = (x < minX) ? x : minX
-                    maxY = (y > maxY) ? y : maxY
-                    minY = (y < minY) ? y : minY
+                    // compute smalest z value og point cloud
+                    minZ = (point3d.z < minZ) ? point3d.z : minZ
                 }
             }
         }
         
-        // Center point cloud in x/y plane
-        // Calculate translation needed to center the point cloud in the world origin. Do the transformation only for the x and y axis. The z values remain untouched
-        let originX = (maxX - minX)/2 + minX
-        let originY = (maxY - minY)/2 + minY
-        
-        let shift = SCNVector3(-originX, -originY, 0)
+        // translation in direction of z, so that the smallest value of z is 0 afterwards
         for index in vertices.indices {
-            vertices[index] += shift
+            vertices[index] += SCNVector3(0,0,-minZ)
         }
         
-        print("total points \(w*h), valid points \(idx)")
+        print("total points: \(w*h), valid points: \(idx), minZ: \(minZ)")
         
         // generate 2 triangles for every vertex (but skip last row & column)
         for ix in 0..<w-1 {
@@ -227,3 +245,15 @@ class ModelData {
         return(n.normalized())
     }
 }
+
+
+extension Float {
+    func inDegree() -> Float {
+        return self * 180 / .pi
+    }
+    
+    func inRadians() -> Float {
+        return self * .pi / 180
+    }
+}
+

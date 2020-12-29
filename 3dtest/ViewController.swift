@@ -53,14 +53,16 @@ class ViewController: UIViewController {
         // Camera
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
-        cameraNode.position = SCNVector3(x: 0, y: 0, z: -0.5)
+        cameraNode.position = SCNVector3(x: 0, y: 0, z: -1)
         cameraNode.eulerAngles = SCNVector3(x: 0, y: Float.pi, z: 0)
         cameraNode.camera?.zNear = 0
         //cameraNode.camera?.zFar = 2.0
         scene.rootNode.addChildNode(cameraNode)
         
-        let x = ModelData()
-        let mesh = x.generateMesh(maxDepth: 1.0)
+        let x: ModelData
+        x = ModelData()
+        
+        let mesh = x.generateMesh()
         mesh.firstMaterial!.diffuse.contents = UIColor.orange
         mesh.firstMaterial!.specular.contents = UIColor.white
         let meshNode = SCNNode(geometry: mesh)

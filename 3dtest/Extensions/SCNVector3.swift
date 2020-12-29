@@ -110,6 +110,36 @@ extension SCNVector3 {
     func cross(_ vec: SCNVector3) -> SCNVector3 {
         return SCNVector3(self.y * vec.z - self.z * vec.y, self.z * vec.x - self.x * vec.z, self.x * vec.y - self.y * vec.x)
     }
+    
+    
+    /**
+     * see https://stackoverflow.com/questions/14607640/rotating-a-vector-in-3d-space
+     *  rotation is counter clockwise (CCW)
+     */
+    func rotatedAround(x angleX: Float = 0,y angleY: Float = 0,z angleZ: Float = 0) -> SCNVector3 {
+        let rotX = [
+            simd_float3(1, 0, 0),
+            simd_float3(0, cos(angleX), -sin(angleX)),
+            simd_float3(0, sin(angleX), cos(angleX)),
+        ]
+        let rotY = [
+            simd_float3(cos(angleY),  0, sin(angleY)),
+            simd_float3(0, 1, 0),
+            simd_float3(-sin(angleY), 0, cos(angleY)),
+        ]
+        let rotZ = [
+            simd_float3(cos(angleZ), -sin(angleZ), 0),
+            simd_float3(sin(angleZ), cos(angleZ), 0),
+            simd_float3(0, 0, 1),
+        ]
+        let simd_rotX = simd_float3x3(rows: rotX)
+        let simd_rotY = simd_float3x3(rows: rotY)
+        let simd_rotZ = simd_float3x3(rows: rotZ)
+        let v = simd_float3(self.x, self.y, self.z)
+        let r = v*simd_rotX*simd_rotY*simd_rotZ
+        return SCNVector3(r.x, r.y, r.z)
+    }
+    
 }
 
 public let SCNVector3One: SCNVector3 = SCNVector3(1.0, 1.0, 1.0)
