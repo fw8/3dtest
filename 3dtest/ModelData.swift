@@ -36,7 +36,6 @@ class ModelData {
         depthMap = json["depthMap"] as? [[Float32]] ?? [[]]
         let cameraIntrinsics = json["cameraIntrinsics"] as? [[Float32]] ?? [[]]
         
-        
         // cam & lidar haben (scheinbar) immer querformat (landscape)
         // bei aufnahme im hochformat (portrait) geht die x achse dann also nach oben (oder nach unten)
         // das bild erscheint dann um 90 grad gedreht
@@ -60,19 +59,19 @@ class ModelData {
         
         let xScale = 1.0/camWidth * lidarWidth
         let yScale = 1.0/camHeight * lidarHeight
-        
-        euler.x = Float32((json["cameraEulerAngle"] as! NSDictionary)["x"] as! Double)
-        euler.y = Float32((json["cameraEulerAngle"] as! NSDictionary)["y"] as! Double)
-        euler.z = Float32((json["cameraEulerAngle"] as! NSDictionary)["z"] as! Double)
-        
-        print("Euler: x = \(Int(euler.x.inDegree().rounded()))º, y = \(Int(euler.y.inDegree().rounded()))º, z = \(Int(euler.z.inDegree().rounded()))º")
-        
+                
         fx = cameraIntrinsics[0][0] * xScale
         fy = cameraIntrinsics[1][1] * yScale
         cx = cameraIntrinsics[0][2] * xScale
         cy = cameraIntrinsics[1][2] * yScale
         
-        print("Lidar: w = \(lidarWidth), h = \(lidarHeight), cx = \(cx), cy = \(cy)")
+        euler.x = Float32((json["cameraEulerAngle"] as! NSDictionary)["x"] as! Double)
+        euler.y = Float32((json["cameraEulerAngle"] as! NSDictionary)["y"] as! Double)
+        euler.z = Float32((json["cameraEulerAngle"] as! NSDictionary)["z"] as! Double)
+        
+        print("\(#function): Lidar: w = \(lidarWidth), h = \(lidarHeight), cx = \(cx), cy = \(cy)")
+        print("\(#function): Euler: x = \(Int(euler.x.inDegree().rounded()))º, y = \(Int(euler.y.inDegree().rounded()))º, z = \(Int(euler.z.inDegree().rounded()))º")
+
         
     }
     
@@ -107,20 +106,24 @@ class ModelData {
         
         fx = frame!.camera.intrinsics[0][0] * xScale
         fy = frame!.camera.intrinsics[1][1] * yScale
-        cx = frame!.camera.intrinsics[0][2] * xScale
-        cy = frame!.camera.intrinsics[1][2] * yScale
+        cx = frame!.camera.intrinsics[2][0] * xScale
+        cy = frame!.camera.intrinsics[2][1] * yScale
 
+        euler = frame!.camera.eulerAngles
+        
+        print("\(#function): Euler: x = \(Int(euler.x.inDegree().rounded()))º, y = \(Int(euler.y.inDegree().rounded()))º, z = \(Int(euler.z.inDegree().rounded()))º")
+        print("\(#function): Lidar: w = \(lidarWidth), h = \(lidarHeight), cx = \(cx), cy = \(cy)")
     }
     
     // generate the mesh from given depth data and the camera intrinsic
-    func generateMesh(maxDepth: Float32 = 1.0) -> SCNGeometry {
+    func generateMesh(_ maxDepth: Float32 = 1.0) -> SCNGeometry {
         
         // reset array
         triangleIndices = []
         
         let w = depthMap.count
         let h = depthMap[0].count
-        print("w = \(w), h = \(h)")
+        print("\(#function): w = \(w), h = \(h)")
         
         // minimal z value of all vertices
         var minZ: Float32 = Float.greatestFiniteMagnitude
@@ -142,15 +145,16 @@ class ModelData {
                     let x = z * (Float32(ix) - cx) / fx
                     let y = z * (Float32(iy) - cy) / fy
                     
-                    let point3d: SCNVector3 = SCNVector3(-1*x, -1*y, z).rotatedAround(y: -euler.x, z: euler.z)
-                    // x und y achse spiegeln und euler.z um z achse drehen (weil wir bilder immer hochkannt machen ist euler.z immer ca. -90º)
-                    // noch unklar warum die rotation von euler.x um die y achse... da stimmt irgendwas noch nicht
+                    var point3d: SCNVector3 = SCNVector3(-1*x, -1*y, z) // mirror at x and y axis to convert into SceneView coordinate system
+                    point3d.rotateZ(euler.z)  // compensate camera roll (around z axis)
+                    point3d.rotateX(euler.x)  // compensate camera pitch (around x axis)
+                    
                     // coordinaten raum in sceneview ist: z zeigt zur kamera und die schaut nach -z, x nach rechts und y nach oben
                     // depth sensor schaut aber nach +z!
                     // aktuell wird die kamera einfach nach z=-1m verschoben und dann um 180º um die y achse gedreht
                     // danach zeigt die x achse allerdings nach links...
                     
-                    vertices.append(point3d) // add calculated point
+                    vertices.append(point3d) // add calculated point to array of vertices
                     normals.append(SCNVector3(x:0,y:0,z:0)) // create an empty normal element
                     idxMatrix[ix][iy] = idx  // store corresponding index
                     idx+=1  // prepare for next index
@@ -161,12 +165,21 @@ class ModelData {
             }
         }
         
-        // translation in direction of z, so that the smallest value of z is 0 afterwards
+        // use x and y component of the vertice behind the center of the camera (or depth map)
+        // to translate the point cloud back into the viewers line of sight after all rotational operations.
+        // also do a translation in direction of z, so that the smallest value of z is 0 afterwards
+
+        let idxCenter = idxMatrix[Int(w/2)][Int(h/2)] // get center of depth map
+        var center = SCNVector3(0,0,0) // default, in case there is no center point
+        if (idxCenter != nil) {
+            center = vertices[Int(idxCenter!)]  // get vertice behind the center of the depth map
+        }
+        // now translate the point cloud
         for index in vertices.indices {
-            vertices[index] += SCNVector3(0,0,-minZ)
+            vertices[index] += SCNVector3(-center.x,-center.y,-minZ)
         }
         
-        print("total points: \(w*h), valid points: \(idx), minZ: \(minZ)")
+        print("\(#function): total points: \(w*h), valid points: \(idx)")
         
         // generate 2 triangles for every vertex (but skip last row & column)
         for ix in 0..<w-1 {
@@ -212,7 +225,8 @@ class ModelData {
         
     }
     
-    // generate triangle from 3 points (given as index) and add the calculated normal to the vertices
+    // generate triangle from 3 points (given as index into self.vertices[]) and
+    // add the calculated normal to self.normals[]
     func genTriangle(_ p1:Int32?, _ p2:Int32?, _ p3:Int32?) {
         if (p1 == nil || p2 == nil || p3 == nil) {
             // generate no triangle if one or more vertices are nil (clipped away)
@@ -222,9 +236,15 @@ class ModelData {
         triangleIndices.append(p2!)
         triangleIndices.append(p3!)
         
-        let n = calcNormal(p1!,p2!,p3!)
+        var n = calcNormal(p1!,p2!,p3!)  // find the normal of the triangle
         
-        // add normal of triangle to normal of all 3 vertices
+        // just in case the resulting normal points away from the viewer (z is positive)
+        // negate z to flip it around
+        n.z = (n.z > 0) ? -n.z : n.z
+        
+        // add normalized normal of triangle to normal of all 3 vertices
+        // In the end, all normal of the adjacent triangles were added to each vertice and
+        // the resulting normal represents the mean value between all adjacent triangles
         normals[Int(p1!)] += n
         normals[Int(p1!)].normalize()
         normals[Int(p2!)] += n
@@ -236,17 +256,18 @@ class ModelData {
     // calculate normal of triangle
     func calcNormal(_ p1:Int32, _ p2:Int32, _ p3:Int32) -> SCNVector3
     {
-        let vp1 = vertices[Int(p1)]
-        let vp2 = vertices[Int(p2)]
-        let vp3 = vertices[Int(p3)]
+        let v1 = vertices[Int(p1)]
+        let v2 = vertices[Int(p2)]
+        let v3 = vertices[Int(p3)]
         
-        let n = (vp2 - vp1).cross(vp3 - vp1)
+        let n = (v2 - v1).cross(v3 - v1)
         
-        return(n.normalized())
+        return(n.normalized()) // return normalized normal
     }
+    
 }
 
-
+// some helpfull extensions to convert between radian and degree
 extension Float {
     func inDegree() -> Float {
         return self * 180 / .pi

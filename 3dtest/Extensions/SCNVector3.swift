@@ -113,34 +113,48 @@ extension SCNVector3 {
     
     
     /**
+     * Rotate vector around x-, y- and z-axis
+     * rotation is counter clockwise (CCW)
      * see https://stackoverflow.com/questions/14607640/rotating-a-vector-in-3d-space
-     *  rotation is counter clockwise (CCW)
      */
-    func rotatedAround(x angleX: Float = 0,y angleY: Float = 0,z angleZ: Float = 0) -> SCNVector3 {
-        let rotX = [
+    
+    mutating func rotateX(_ angle: Float) {
+        let rot = [
             simd_float3(1, 0, 0),
-            simd_float3(0, cos(angleX), -sin(angleX)),
-            simd_float3(0, sin(angleX), cos(angleX)),
+            simd_float3(0, cos(angle), -sin(angle)),
+            simd_float3(0, sin(angle), cos(angle)),
         ]
-        let rotY = [
-            simd_float3(cos(angleY),  0, sin(angleY)),
-            simd_float3(0, 1, 0),
-            simd_float3(-sin(angleY), 0, cos(angleY)),
-        ]
-        let rotZ = [
-            simd_float3(cos(angleZ), -sin(angleZ), 0),
-            simd_float3(sin(angleZ), cos(angleZ), 0),
-            simd_float3(0, 0, 1),
-        ]
-        let simd_rotX = simd_float3x3(rows: rotX)
-        let simd_rotY = simd_float3x3(rows: rotY)
-        let simd_rotZ = simd_float3x3(rows: rotZ)
-        let v = simd_float3(self.x, self.y, self.z)
-        let r = v*simd_rotX*simd_rotY*simd_rotZ
-        return SCNVector3(r.x, r.y, r.z)
+        let v = simd_float3(self.x, self.y, self.z)*simd_float3x3(rows: rot)
+        self.x = v.x
+        self.y = v.y
+        self.z = v.z
     }
     
+    mutating func rotateY(_ angle: Float) {
+        let rot = [
+            simd_float3(cos(angle),  0, sin(angle)),
+            simd_float3(0, 1, 0),
+            simd_float3(-sin(angle), 0, cos(angle)),
+        ]
+        let v = simd_float3(self.x, self.y, self.z)*simd_float3x3(rows: rot)
+        self.x = v.x
+        self.y = v.y
+        self.z = v.z
+    }
+    
+    mutating func rotateZ(_ angle: Float) {
+        let rot = [
+            simd_float3(cos(angle), -sin(angle), 0),
+            simd_float3(sin(angle), cos(angle), 0),
+            simd_float3(0, 0, 1),
+        ]
+        let v = simd_float3(self.x, self.y, self.z)*simd_float3x3(rows: rot)
+        self.x = v.x
+        self.y = v.y
+        self.z = v.z
+    }
 }
+
 
 public let SCNVector3One: SCNVector3 = SCNVector3(1.0, 1.0, 1.0)
 
