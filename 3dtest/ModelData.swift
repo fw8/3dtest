@@ -14,6 +14,7 @@ class ModelData {
     private var depthMap: [[Float32]] = [[]]    // 2d array of depth data from the lidar
     private var vertices: [SCNVector3] = []     // 3d vertices of the mesh covering the scanned object
     private var normals: [SCNVector3] = []      // normals for each vertice
+    private var texCoord: [simd_float2] = []       // texture coordinates
     private var idxMatrix: [[Int32?]] = [[]]    // 2d array with pointers into the verices array
                                                 // maps from lidar pixel to vertice in world coordinates
                                                 // value could be nil if vertice was skiped or removed
@@ -27,13 +28,28 @@ class ModelData {
     
     // Camer euler angles
     private var euler = simd_float3(0,0,0)
+    
+    // The original color image
+    private var colorImage = UIImage()
         
     // Simple constructor, loading demo data from json file
     init() {
-        let asset = NSDataAsset(name: "ExampleScan", bundle: Bundle.main)
+        let asset = NSDataAsset(name: "ExampleScan1", bundle: Bundle.main)
         let json: NSDictionary = try! JSONSerialization.jsonObject(with: asset!.data, options: JSONSerialization.ReadingOptions.allowFragments) as! NSDictionary
         
-        depthMap = json["depthMap"] as? [[Float32]] ?? [[]]
+        if (json["depthMap"] == nil) {
+            print("No depth data found")
+            return
+        }
+    
+        let depthMapAsDouble = json["depthMap"] as? [[Double]] ?? [[]]
+        depthMap = Array(repeating: Array(repeating: Float32(0), count: depthMapAsDouble[0].count), count: depthMapAsDouble.count)
+        for ix in 0..<depthMapAsDouble.count {
+            for iy in 0..<depthMapAsDouble[ix].count {
+                depthMap[ix][iy] = Float(depthMapAsDouble[ix][iy])
+            }
+        }
+                
         let cameraIntrinsics = json["cameraIntrinsics"] as? [[Float32]] ?? [[]]
         
         // cam & lidar haben (scheinbar) immer querformat (landscape)
@@ -69,9 +85,14 @@ class ModelData {
         euler.y = Float32((json["cameraEulerAngle"] as! NSDictionary)["y"] as! Double)
         euler.z = Float32((json["cameraEulerAngle"] as! NSDictionary)["z"] as! Double)
         
+        if ((json["colorImage"]) != nil) {
+            let imgBase64 = (json["colorImage"] as? String)!
+            let imageDecoded = Data(base64Encoded: imgBase64, options: Data.Base64DecodingOptions.ignoreUnknownCharacters)!
+            colorImage = UIImage(data: imageDecoded)!
+        }
+        
         print("\(#function): Lidar: w = \(lidarWidth), h = \(lidarHeight), cx = \(cx), cy = \(cy)")
         print("\(#function): Euler: x = \(Int(euler.x.inDegree().rounded()))º, y = \(Int(euler.y.inDegree().rounded()))º, z = \(Int(euler.z.inDegree().rounded()))º")
-
         
     }
     
@@ -111,6 +132,8 @@ class ModelData {
 
         euler = frame!.camera.eulerAngles
         
+        colorImage = frame!.capturedImage.toUIImage()
+          
         print("\(#function): Euler: x = \(Int(euler.x.inDegree().rounded()))º, y = \(Int(euler.y.inDegree().rounded()))º, z = \(Int(euler.z.inDegree().rounded()))º")
         print("\(#function): Lidar: w = \(lidarWidth), h = \(lidarHeight), cx = \(cx), cy = \(cy)")
     }
@@ -156,6 +179,7 @@ class ModelData {
                     
                     vertices.append(point3d) // add calculated point to array of vertices
                     normals.append(SCNVector3(x:0,y:0,z:0)) // create an empty normal element
+                    texCoord.append(simd_float2(Float(ix)/Float(w),Float(iy)/Float(h))) // add normalized texture coordinates
                     idxMatrix[ix][iy] = idx  // store corresponding index
                     idx+=1  // prepare for next index
                     
@@ -214,6 +238,16 @@ class ModelData {
                                              dataOffset: 0,
                                              dataStride: MemoryLayout<SCNVector3>.stride)
         
+        let texCoordData = NSData(bytes: texCoord, length: MemoryLayout<simd_float2>.size * texCoord.count) as Data
+        let texCoordSource = SCNGeometrySource(data: texCoordData,
+                                             semantic: .texcoord,
+                                             vectorCount: texCoord.count,
+                                             usesFloatComponents: true,
+                                             componentsPerVector: 2,
+                                             bytesPerComponent: MemoryLayout<Float>.size,
+                                             dataOffset: 0,
+                                             dataStride: MemoryLayout<simd_float2>.stride)
+        
         let elementData = NSData(bytes: triangleIndices, length: MemoryLayout<Int32>.size * triangleIndices.count) as Data
         
         let element = SCNGeometryElement(data: elementData,
@@ -221,7 +255,7 @@ class ModelData {
                                          primitiveCount: triangleIndices.count/3,
                                          bytesPerIndex: MemoryLayout<Int32>.size)
         
-        return SCNGeometry(sources: [vertexSource,normalSource], elements: [element])
+        return SCNGeometry(sources: [vertexSource,normalSource,texCoordSource], elements: [element])
         
     }
     
