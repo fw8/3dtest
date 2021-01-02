@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreImage
+import UIKit
 
 
 extension CVPixelBuffer {
@@ -27,6 +28,14 @@ extension CVPixelBuffer {
         }
         CVPixelBufferUnlockBaseAddress(self, CVPixelBufferLockFlags(rawValue: 0))
         return floatArray
+    }
+    
+    func toUIImage() -> UIImage {
+        let ciImage = CIImage(cvPixelBuffer: self)
+        let context = CIContext(options: nil)
+        let cgImage = context.createCGImage(ciImage, from: ciImage.extent)
+        let uiImage = UIImage(cgImage: cgImage!)
+        return uiImage
     }
 }
 
