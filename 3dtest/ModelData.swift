@@ -300,15 +300,3 @@ class ModelData {
     }
     
 }
-
-// some helpfull extensions to convert between radian and degree
-extension Float {
-    func inDegree() -> Float {
-        return self * 180 / .pi
-    }
-    
-    func inRadians() -> Float {
-        return self * .pi / 180
-    }
-}
-
