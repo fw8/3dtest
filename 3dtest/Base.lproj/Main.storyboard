@@ -19,14 +19,28 @@
                             <sceneKitView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZjR-po-dgX">
                                 <rect key="frame" x="0.0" y="44" width="414" height="818"/>
                             </sceneKitView>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="JbU-jo-6gf">
+                                <rect key="frame" x="0.0" y="831" width="414" height="32"/>
+                                <segments>
+                                    <segment title="Plastic"/>
+                                    <segment title="Photo"/>
+                                    <segment title="Colormap"/>
+                                </segments>
+                                <connections>
+                                    <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="valueChanged" id="4hE-xh-NHR"/>
+                                </connections>
+                            </segmentedControl>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="JbU-jo-6gf" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="7UP-QL-MMH"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ZjR-po-dgX" secondAttribute="bottom" id="RXp-gE-EAN"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ZjR-po-dgX" secondAttribute="trailing" id="Rtj-qP-aRn"/>
                             <constraint firstItem="ZjR-po-dgX" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="Uea-aX-Tcr"/>
                             <constraint firstItem="ZjR-po-dgX" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="b0s-ut-Ltf"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="JbU-jo-6gf" secondAttribute="bottom" id="d0I-hW-0WV"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="JbU-jo-6gf" secondAttribute="trailing" id="ueH-w7-DNU"/>
                         </constraints>
                     </view>
                     <connections>

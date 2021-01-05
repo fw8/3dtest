@@ -12,6 +12,11 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var sceneView: SCNView!
     
+    var colormapShader: String = ""
+    var model: ModelData? = nil
+    var mesh: SCNGeometry? = nil
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -25,6 +30,22 @@ class ViewController: UIViewController {
         
     }
     
+    @IBAction func buttonPressed(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            mesh!.shaderModifiers = [:]
+            mesh!.firstMaterial!.diffuse.contents = UIColor(red: 254/255, green: 177/255, blue: 154/255, alpha: 0.8)
+        case 1:
+            mesh!.shaderModifiers = [:]
+            mesh!.firstMaterial!.diffuse.contents = model?.colorImage
+        case 2:
+            mesh!.shaderModifiers = [.surface: colormapShader]
+            mesh!.firstMaterial!.diffuse.contents = model?.colorImage
+        default:
+            mesh!.shaderModifiers = [:]
+            mesh!.firstMaterial!.diffuse.contents = UIColor(red: 254/255, green: 177/255, blue: 154/255, alpha: 0.8)
+        }
+    }
     
     // MARK: Scene
     func sceneSetup() {
@@ -32,6 +53,11 @@ class ViewController: UIViewController {
         let scene = SCNScene()
         scene.background.contents = UIColor.darkGray
         sceneView.autoenablesDefaultLighting = true
+        
+        guard let shaderURL = Bundle.main.url(forResource: "colormap", withExtension: "shader"),
+              let shader = try? String(contentsOf: shaderURL)
+            else { fatalError("Can't load shader from bundle.") }
+        colormapShader = shader
         
         /*
         // Ambientes Licht
@@ -59,16 +85,22 @@ class ViewController: UIViewController {
         //cameraNode.camera?.zFar = 2.0
         scene.rootNode.addChildNode(cameraNode)
         
-        let x: ModelData
-        x = ModelData()
+        model = ModelData()
+        // check for model == nil !!
+        mesh = model!.generateMesh()
+        mesh!.firstMaterial!.diffuse.contents = UIColor(red: 254/255, green: 177/255, blue: 154/255, alpha: 0.8)
+        // rotate texture 90º for portrait mode
+//        let translation = SCNMatrix4MakeTranslation(0, -1, 0)
+//        let rotation = SCNMatrix4MakeRotation(Float(90.0).inRadians(), 0, 0, 1)
+//        let transform = SCNMatrix4Mult(translation, rotation)
         
-        let mesh = x.generateMesh()
-        mesh.firstMaterial!.diffuse.contents = UIColor(red: 254/255, green: 177/255, blue: 154/255, alpha: 0.8)
-        mesh.firstMaterial!.specular.contents = UIColor.white
+//        mesh.firstMaterial?.diffuse.contentsTransform = transform
+        //mesh.shaderModifiers = [.surface: stripesShader]
+        mesh!.firstMaterial!.specular.contents = UIColor.white
         let meshNode = SCNNode(geometry: mesh)
         scene.rootNode.addChildNode(meshNode)
         
-        scene.rootNode.addChildNode(Origin())
+        //scene.rootNode.addChildNode(Origin())
         
         // 3
         sceneView.scene = scene
@@ -77,6 +109,4 @@ class ViewController: UIViewController {
         
     }
     
-    
 }
-

@@ -14,6 +14,9 @@
 		DA288ABD25949748009E12BD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA288ABC25949748009E12BD /* Assets.xcassets */; };
 		DA288AC025949748009E12BD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DA288ABE25949748009E12BD /* LaunchScreen.storyboard */; };
 		DA288AC92594ABB6009E12BD /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA288AC82594ABB6009E12BD /* ModelData.swift */; };
+		DA4FD2E925A0D5E800092719 /* Float.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4FD2E825A0D5E800092719 /* Float.swift */; };
+		DA4FD2FB25A2101600092719 /* stripes.shader in Resources */ = {isa = PBXBuildFile; fileRef = DA4FD2FA25A2101600092719 /* stripes.shader */; };
+		DA4FD2FF25A214E800092719 /* colormap.shader in Resources */ = {isa = PBXBuildFile; fileRef = DA4FD2FE25A214E800092719 /* colormap.shader */; };
 		DA5C1B1D259772DF00AFF8BF /* Origin.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5C1B1C259772DF00AFF8BF /* Origin.swift */; };
 		DA8BB5CC2594BE0E00D8B554 /* example_scan.json in Resources */ = {isa = PBXBuildFile; fileRef = DA8BB5CB2594BE0E00D8B554 /* example_scan.json */; };
 		DA9E3ECD2597C0F300C007B6 /* SCNVector3.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9E3ECC2597C0F300C007B6 /* SCNVector3.swift */; };
@@ -30,6 +33,9 @@
 		DA288ABF25949748009E12BD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		DA288AC125949748009E12BD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA288AC82594ABB6009E12BD /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
+		DA4FD2E825A0D5E800092719 /* Float.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Float.swift; sourceTree = "<group>"; };
+		DA4FD2FA25A2101600092719 /* stripes.shader */ = {isa = PBXFileReference; lastKnownFileType = text; path = stripes.shader; sourceTree = "<group>"; };
+		DA4FD2FE25A214E800092719 /* colormap.shader */ = {isa = PBXFileReference; lastKnownFileType = text; path = colormap.shader; sourceTree = "<group>"; };
 		DA5C1B1A259676A400AFF8BF /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = MyPlayground.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		DA5C1B1C259772DF00AFF8BF /* Origin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Origin.swift; sourceTree = "<group>"; };
 		DA8BB5CB2594BE0E00D8B554 /* example_scan.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = example_scan.json; path = Assets.xcassets/example_scan.json; sourceTree = "<group>"; };
@@ -77,6 +83,8 @@
 				DA8BB5CB2594BE0E00D8B554 /* example_scan.json */,
 				DA288AB925949746009E12BD /* Main.storyboard */,
 				DA288ABC25949748009E12BD /* Assets.xcassets */,
+				DA4FD2FA25A2101600092719 /* stripes.shader */,
+				DA4FD2FE25A214E800092719 /* colormap.shader */,
 				DA288ABE25949748009E12BD /* LaunchScreen.storyboard */,
 				DA288AC125949748009E12BD /* Info.plist */,
 			);
@@ -88,6 +96,7 @@
 			children = (
 				DA9E3ECC2597C0F300C007B6 /* SCNVector3.swift */,
 				DA9E3ED02598CD0B00C007B6 /* CVPixelBuffer.swift */,
+				DA4FD2E825A0D5E800092719 /* Float.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -151,8 +160,10 @@
 			files = (
 				DA288AC025949748009E12BD /* LaunchScreen.storyboard in Resources */,
 				DA8BB5CC2594BE0E00D8B554 /* example_scan.json in Resources */,
+				DA4FD2FF25A214E800092719 /* colormap.shader in Resources */,
 				DA288ABD25949748009E12BD /* Assets.xcassets in Resources */,
 				DA288ABB25949746009E12BD /* Main.storyboard in Resources */,
+				DA4FD2FB25A2101600092719 /* stripes.shader in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,6 +178,7 @@
 				DA288AC92594ABB6009E12BD /* ModelData.swift in Sources */,
 				DA288AB425949746009E12BD /* AppDelegate.swift in Sources */,
 				DA288AB625949746009E12BD /* SceneDelegate.swift in Sources */,
+				DA4FD2E925A0D5E800092719 /* Float.swift in Sources */,
 				DA9E3ED12598CD0B00C007B6 /* CVPixelBuffer.swift in Sources */,
 				DA5C1B1D259772DF00AFF8BF /* Origin.swift in Sources */,
 				DA9E3ECD2597C0F300C007B6 /* SCNVector3.swift in Sources */,

@@ -30,11 +30,11 @@ class ModelData {
     private var euler = simd_float3(0,0,0)
     
     // The original color image
-    private var colorImage = UIImage()
+    var colorImage = UIImage()
         
     // Simple constructor, loading demo data from json file
     init() {
-        let asset = NSDataAsset(name: "ExampleScan1", bundle: Bundle.main)
+        let asset = NSDataAsset(name: "ExampleScan2", bundle: Bundle.main)
         let json: NSDictionary = try! JSONSerialization.jsonObject(with: asset!.data, options: JSONSerialization.ReadingOptions.allowFragments) as! NSDictionary
         
         if (json["depthMap"] == nil) {
@@ -93,7 +93,6 @@ class ModelData {
         
         print("\(#function): Lidar: w = \(lidarWidth), h = \(lidarHeight), cx = \(cx), cy = \(cy)")
         print("\(#function): Euler: x = \(Int(euler.x.inDegree().rounded()))º, y = \(Int(euler.y.inDegree().rounded()))º, z = \(Int(euler.z.inDegree().rounded()))º")
-        
     }
     
     // Constructor which creates a point cloud from ARFrame
