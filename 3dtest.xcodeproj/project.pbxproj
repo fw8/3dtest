@@ -21,6 +21,7 @@
 		DA8BB5CC2594BE0E00D8B554 /* example_scan.json in Resources */ = {isa = PBXBuildFile; fileRef = DA8BB5CB2594BE0E00D8B554 /* example_scan.json */; };
 		DA9E3ECD2597C0F300C007B6 /* SCNVector3.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9E3ECC2597C0F300C007B6 /* SCNVector3.swift */; };
 		DA9E3ED12598CD0B00C007B6 /* CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9E3ED02598CD0B00C007B6 /* CVPixelBuffer.swift */; };
+		DACC840625A7362600BFCB01 /* checkered.shader in Resources */ = {isa = PBXBuildFile; fileRef = DACC840525A7362600BFCB01 /* checkered.shader */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		DA8BB5CB2594BE0E00D8B554 /* example_scan.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = example_scan.json; path = Assets.xcassets/example_scan.json; sourceTree = "<group>"; };
 		DA9E3ECC2597C0F300C007B6 /* SCNVector3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCNVector3.swift; sourceTree = "<group>"; };
 		DA9E3ED02598CD0B00C007B6 /* CVPixelBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVPixelBuffer.swift; sourceTree = "<group>"; };
+		DACC840525A7362600BFCB01 /* checkered.shader */ = {isa = PBXFileReference; lastKnownFileType = text; path = checkered.shader; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +87,7 @@
 				DA288ABC25949748009E12BD /* Assets.xcassets */,
 				DA4FD2FA25A2101600092719 /* stripes.shader */,
 				DA4FD2FE25A214E800092719 /* colormap.shader */,
+				DACC840525A7362600BFCB01 /* checkered.shader */,
 				DA288ABE25949748009E12BD /* LaunchScreen.storyboard */,
 				DA288AC125949748009E12BD /* Info.plist */,
 			);
@@ -163,6 +166,7 @@
 				DA4FD2FF25A214E800092719 /* colormap.shader in Resources */,
 				DA288ABD25949748009E12BD /* Assets.xcassets in Resources */,
 				DA288ABB25949746009E12BD /* Main.storyboard in Resources */,
+				DACC840625A7362600BFCB01 /* checkered.shader in Resources */,
 				DA4FD2FB25A2101600092719 /* stripes.shader in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

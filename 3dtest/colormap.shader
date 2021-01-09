@@ -1,4 +1,4 @@
-uniform float scale = 15.0;
+uniform float colormap_scale = 30.0;
 
 // Calculate hsv colormap for values between 0 and 1
 // Based on
@@ -42,7 +42,7 @@ vec4 transformed_position = u_inverseModelTransform * u_inverseViewTransform * v
 
 // lookup z in colormap
 float z = transformed_position.z;
-z *= scale;
+z *= colormap_scale;
 z = z - floor(z);  // map z to range 0..1 (e.g. 2.5 becomes 0.5)
 vec4 color = colormap(z);
 

@@ -25,6 +25,7 @@
                                     <segment title="Plastic"/>
                                     <segment title="Photo"/>
                                     <segment title="Colormap"/>
+                                    <segment title="Checkered"/>
                                 </segments>
                                 <connections>
                                     <action selector="buttonPressed:" destination="BYZ-38-t0r" eventType="valueChanged" id="4hE-xh-NHR"/>
