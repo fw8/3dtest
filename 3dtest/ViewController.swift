@@ -17,6 +17,8 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     var model: ModelData? = nil
     var mesh: SCNGeometry? = nil
     var centerOfScreen = CGPoint()
+    var countMarker = 0
+    var marker = Array(repeating: SCNVector3(), count: 3)
     
     
     override func viewDidLoad() {
@@ -30,9 +32,158 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         
         sceneSetup()
         centerOfScreen = sceneView.center
-        sceneView.delegate = self
         
+        // add a tap gesture recognizer
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        sceneView.addGestureRecognizer(tapGesture)
+        
+        sceneView.delegate = self
     }
+    
+    @objc func handleTap(_ gestureRecognize: UIGestureRecognizer) {
+        // retrieve the SCNView
+        let sceneView = self.sceneView!
+
+        // check what nodes are tapped
+        let p = gestureRecognize.location(in: sceneView)
+        var hits = sceneView.hitTest(p, options: [:])
+        
+        var hit = findHit(withName: "Model", in: hits)
+        
+        if (hit == nil) {
+            //print("found nothing...")
+            return
+        }
+        
+        // Only 3 markers allowed
+        if countMarker > 2 {
+            sceneView.scene?.rootNode.enumerateChildNodes { (node , stop) in
+                if node.name == "Marker" {
+                    node.removeFromParentNode()
+                }
+            }
+            countMarker = 0
+        }
+        
+        let hitPos = hit?.worldCoordinates
+        
+        print("hit at \(hitPos!)")
+        
+        marker[countMarker] = hitPos!
+        
+        var sphere = SCNSphere(radius: 0.005)
+        sphere.firstMaterial!.diffuse.contents = UIColor.blue
+        var node = SCNNode(geometry: sphere)
+        node.position = hitPos!
+        node.name = "Marker"
+        sceneView.scene?.rootNode.addChildNode(node)
+        
+        countMarker+=1
+        
+        var dl = SCNVector3()
+        var dr = SCNVector3()
+        var vp = SCNVector3()
+        
+        if countMarker >= 3 {
+            for m in marker {
+                if (hasMaxY(m)) {
+                    vp = m
+                } else if (hasMinX(m)) {
+                    dl = m
+                } else {
+                    dr = m
+                }
+            }
+            print("vp: ",vp)
+            print("dl: ",dl)
+            print("dr: ",dr)
+            
+            var line = SCNGeometry.lineFrom(vector: dl, toVector: dr)
+            line.firstMaterial!.diffuse.contents = UIColor.blue
+            node = SCNNode(geometry: line)
+            node.name = "Marker"
+            sceneView.scene?.rootNode.addChildNode(node)
+            
+            let m = (dl+dr)*0.5
+            
+            var rayStart = m
+            var rayEnd = m
+            rayStart.z = 0
+            rayEnd.z = 1
+            
+            line = SCNGeometry.lineFrom(vector: rayStart, toVector: rayEnd)
+            line.firstMaterial!.diffuse.contents = UIColor.blue
+            node = SCNNode(geometry: line)
+            node.name = "Marker"
+            sceneView.scene?.rootNode.addChildNode(node)
+            
+            hits = (sceneView.scene?.rootNode.hitTestWithSegment(from: rayStart , to: rayEnd, options: [:]))!
+            hit = findHit(withName: "Model", in: hits)
+            
+            //print("hit: ",hit)
+            
+            let dm = hit!.worldCoordinates
+            
+            sphere = SCNSphere(radius: 0.005)
+            sphere.firstMaterial!.diffuse.contents = UIColor.red
+            node = SCNNode(geometry: sphere)
+            node.position = dm
+            node.name = "Marker"
+            sceneView.scene?.rootNode.addChildNode(node)
+            
+            
+            var a = (dm.z - vp.z)
+            var b = (dm.y - vp.y)
+            
+            let ti = atan(a/b)
+            
+            print(String(format: "Rumpfneigung: %.2fº",ti.inDegree()))
+            
+            var p = SCNVector3(dm.x,dm.y,vp.z)
+            var triangle = SCNGeometry.triangle(vp,dm,p)
+            node = SCNNode(geometry: triangle)
+            node.name = "Marker"
+            sceneView.scene?.rootNode.addChildNode(node)
+            
+            
+            a = (dm.x - vp.x)
+            b = (dm.y - vp.y)
+            
+            let tb = atan(a/b)
+            
+            print(String(format: "Lotabweichung: %.2fº",tb.inDegree()))
+            
+            p = SCNVector3(vp.x,dm.y,dm.z)
+            triangle = SCNGeometry.triangle(vp,dm,p)
+            triangle.firstMaterial!.diffuse.contents = UIColor.yellow
+            node = SCNNode(geometry: triangle)
+            node.name = "Marker"
+            sceneView.scene?.rootNode.addChildNode(node)
+            
+            print(String(format: "Beckenhochstand: %.2fmm",abs(dl.y-dr.y)*1000.0))
+            
+            mesh!.firstMaterial!.diffuse.contents = UIColor(red: 254/255, green: 177/255, blue: 154/255, alpha: 0.4)
+        }
+    }
+    
+    private func hasMinX(_ p: SCNVector3) -> Bool {
+        for m in marker {
+            if m.x < p.x {
+                return false
+            }
+        }
+        return true
+    }
+    
+    private func hasMaxY(_ p: SCNVector3) -> Bool {
+        for m in marker {
+            if m.y > p.y {
+                return false
+            }
+        }
+        return true
+    }
+
     
     @IBAction func buttonPressed(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
@@ -62,6 +213,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         
         //let campos = sceneView.pointOfView?.worldPosition
         //print("campos: \(campos!)")
+        return
         
         let hits = sceneView.hitTest(centerOfScreen)
         let hit = findHit(withName: "Model", in: hits)
@@ -75,14 +227,14 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         
         //print("hit at \(hitPos!)")
         
-        var node = sceneView.scene?.rootNode.childNode(withName: "Marker", recursively: true)
+        var node = sceneView.scene?.rootNode.childNode(withName: "RedMarker", recursively: true)
         
         if (node == nil) {
             let sphere = SCNSphere(radius: 0.01)
             sphere.firstMaterial!.diffuse.contents = UIColor.red
             node = SCNNode(geometry: sphere)
             node?.position = hitPos!
-            node?.name = "Marker"
+            node?.name = "RedMarker"
             sceneView.scene?.rootNode.addChildNode(node!)
         }
         

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17B265DE25F4261F001DE0E0 /* SCNGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B265DD25F4261F001DE0E0 /* SCNGeometry.swift */; };
 		DA288AB425949746009E12BD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA288AB325949746009E12BD /* AppDelegate.swift */; };
 		DA288AB625949746009E12BD /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA288AB525949746009E12BD /* SceneDelegate.swift */; };
 		DA288AB825949746009E12BD /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA288AB725949746009E12BD /* ViewController.swift */; };
@@ -26,6 +27,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		17B265DD25F4261F001DE0E0 /* SCNGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCNGeometry.swift; sourceTree = "<group>"; };
 		DA288AB025949746009E12BD /* 3dtest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 3dtest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA288AB325949746009E12BD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DA288AB525949746009E12BD /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				DA9E3ECC2597C0F300C007B6 /* SCNVector3.swift */,
+				17B265DD25F4261F001DE0E0 /* SCNGeometry.swift */,
 				DA9E3ED02598CD0B00C007B6 /* CVPixelBuffer.swift */,
 				DA4FD2E825A0D5E800092719 /* Float.swift */,
 			);
@@ -191,6 +194,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA288AB825949746009E12BD /* ViewController.swift in Sources */,
+				17B265DE25F4261F001DE0E0 /* SCNGeometry.swift in Sources */,
 				DA288AC92594ABB6009E12BD /* ModelData.swift in Sources */,
 				DA288AB425949746009E12BD /* AppDelegate.swift in Sources */,
 				DA288AB625949746009E12BD /* SceneDelegate.swift in Sources */,
