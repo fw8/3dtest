@@ -34,7 +34,7 @@ class ModelData {
         
     // Simple constructor, loading demo data from json file
     init() {
-        let asset = NSDataAsset(name: "ExampleScan2", bundle: Bundle.main)
+        let asset = NSDataAsset(name: "ExampleScan3", bundle: Bundle.main)
         let json: NSDictionary = try! JSONSerialization.jsonObject(with: asset!.data, options: JSONSerialization.ReadingOptions.allowFragments) as! NSDictionary
         
         if (json["depthMap"] == nil) {
@@ -162,7 +162,7 @@ class ModelData {
             for iy in 0..<h {
                 let z = depthMap[ix][iy] //
                 
-                if (z < maxDepth) {  // depth clipping assuming smalest z is 0
+                if (z < maxDepth) {  // depth clipping assuming smallest z is 0
                     
                     let x = z * (Float32(ix) - cx) / fx
                     let y = z * (Float32(iy) - cy) / fy
@@ -265,6 +265,10 @@ class ModelData {
             // generate no triangle if one or more vertices are nil (clipped away)
             return
         }
+        if (maxZ(p1!,p2!,p3!)>0.2) {
+            // threshold for "strechy" triangles
+            return
+        }
         triangleIndices.append(p1!)
         triangleIndices.append(p2!)
         triangleIndices.append(p3!)
@@ -298,4 +302,11 @@ class ModelData {
         return(n.normalized()) // return normalized normal
     }
     
+    func maxZ(_ p1:Int32, _ p2:Int32, _ p3:Int32) -> Float
+    {
+        let v1 = vertices[Int(p1)]
+        let v2 = vertices[Int(p2)]
+        let v3 = vertices[Int(p3)]
+        return (max(max(v1.z,v2.z),max(v2.z,v3.z)))
+    }
 }

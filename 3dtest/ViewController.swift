@@ -205,44 +205,6 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         }
     }
     
-    // Delegate function of SCNSceneRenderer
-    func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
-        // get cam pos and calc ray and move needle to intersection
-        // what to do if there is no intersection?
-        // align needle to surface normal?
-        
-        //let campos = sceneView.pointOfView?.worldPosition
-        //print("campos: \(campos!)")
-        return
-        
-        let hits = sceneView.hitTest(centerOfScreen)
-        let hit = findHit(withName: "Model", in: hits)
-        
-        if (hit == nil) {
-            //print("found nothing...")
-            return
-        }
-        
-        let hitPos = hit?.worldCoordinates
-        
-        //print("hit at \(hitPos!)")
-        
-        var node = sceneView.scene?.rootNode.childNode(withName: "RedMarker", recursively: true)
-        
-        if (node == nil) {
-            let sphere = SCNSphere(radius: 0.01)
-            sphere.firstMaterial!.diffuse.contents = UIColor.red
-            node = SCNNode(geometry: sphere)
-            node?.position = hitPos!
-            node?.name = "RedMarker"
-            sceneView.scene?.rootNode.addChildNode(node!)
-        }
-        
-        let action = SCNAction.move(to: hitPos!, duration: 0.1)
-        node?.runAction(action)
-        
-    }
-    
     // Search in hit array for named node
     private func findHit(withName searchName: String, in array: [SCNHitTestResult]) -> SCNHitTestResult?
     {
